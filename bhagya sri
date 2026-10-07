@@ -1,0 +1,108 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import java.text.NumberFormat;
+
+public class TipCalculatorApp extends Application {
+
+    @Override
+    public void start(Stage primaryStage) {
+        // 1. Create the UI Components
+        Label billLabel = new Label("Amount:");
+        TextField billTextField = new TextField();
+        billTextField.setPromptText("Enter bill amount");
+
+        Label tipPercentLabel = new Label("Tip Percentage (15%):");
+        Slider tipSlider = new Slider(0, 30, 15); // min: 0%, max: 30%, default: 15%
+        tipSlider.setShowTickMarks(true);
+        tipSlider.setShowTickLabels(true);
+        tipSlider.setMajorTickUnit(5);
+
+        Label tipLabel = new Label("Tip:");
+        TextField tipTextField = new TextField();
+        tipTextField.setEditable(false); // Read-only
+        tipTextField.setFocusTraversable(false);
+
+        Label totalLabel = new Label("Total:");
+        TextField totalTextField = new TextField();
+        totalTextField.setEditable(false); // Read-only
+        totalTextField.setFocusTraversable(false);
+
+        Button calculateButton = new Button("Calculate");
+
+        // 2. Set Up layout using a GridPane for uniform spacing
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(15);
+        gridPane.setPadding(new Insets(20));
+        gridPane.setAlignment(Pos.CENTER);
+
+        // Position items in the grid: (Control, Column, Row)
+        gridPane.add(billLabel, 0, 0);
+        gridPane.add(billTextField, 1, 0);
+        
+        gridPane.add(tipPercentLabel, 0, 1);
+        gridPane.add(tipSlider, 1, 1);
+        
+        gridPane.add(tipLabel, 0, 2);
+        gridPane.add(tipTextField, 1, 2);
+        
+        gridPane.add(totalLabel, 0, 3);
+        gridPane.add(totalTextField, 1, 3);
+        
+        gridPane.add(calculateButton, 1, 4);
+        GridPane.setHalignment(calculateButton, javafx.geometry.HPos.RIGHT);
+
+        // 3. Handle User Interactions (Event Handling & Listeners)
+        
+        // Listener: Update the tip % label dynamically as the user moves the slider
+        tipSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int percentage = newValue.intValue();
+            tipPercentLabel.setText(String.format("Tip Percentage (%d%%):", percentage));
+        });
+
+        // Event Handler: Perform calculations when the user clicks the button
+        calculateButton.setOnAction(e -> {
+            try {
+                // Parse the user input string into a double
+                double billAmount = Double.parseDouble(billTextField.getText());
+                double tipPercentage = Math.round(tipSlider.getValue()) / 100.0;
+
+                // Calculate tip and total
+                double tipAmount = billAmount * tipPercentage;
+                double totalAmount = billAmount + tipAmount;
+
+                // Format numbers into standard currency format
+                NumberFormat currency = NumberFormat.getCurrencyInstance();
+                tipTextField.setText(currency.format(tipAmount));
+                totalTextField.setText(currency.format(totalAmount));
+
+            } catch (NumberFormatException ex) {
+                // Handle invalid inputs gracefully (e.g., text instead of numbers)
+                billTextField.setText("Invalid Input");
+                tipTextField.clear();
+                totalTextField.clear();
+            }
+        });
+
+        // 4. Create the Scene and display the Stage
+        VBox root = new VBox(gridPane);
+        Scene scene = new Scene(root, 360, 280);
+        
+        primaryStage.setTitle("Tip Calculator");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
